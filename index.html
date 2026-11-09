@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="data:,">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#07011a" />
+  <title>Circuit Runner</title>
+  <style>
+    :root {
+      --neon-cyan: #05d9e8;
+      --neon-pink: #ff2a6d;
+      --neon-yellow: #f9c80e;
+      --neon-green: #39ff88;
+      --ink: #07011a;
+      --font: "Avenir Next", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      background: var(--ink);
+      overflow: hidden;
+      font-family: var(--font);
+      color: #fff;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+    canvas { display: block; }
+    .hidden { display: none !important; }
+
+    /* ---------- HUD ---------- */
+    #hud {
+      position: fixed;
+      top: max(14px, env(safe-area-inset-top, 0px));
+      left: 0; right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 0 max(16px, 3vw);
+      pointer-events: none;
+      z-index: 10;
+      text-shadow: 0 0 10px rgba(5, 217, 232, 0.6), 0 2px 0 rgba(0, 0, 0, 0.6);
+    }
+    .hud-side { font-weight: 700; font-size: clamp(14px, 2.4vmin, 20px); letter-spacing: 0.06em; min-width: 90px; }
+    .hud-side.right { text-align: right; }
+    .hud-label { display: block; font-size: 0.65em; opacity: 0.7; letter-spacing: 0.18em; }
+    #hud-cells { color: var(--neon-green); }
+    #hud-cells::before { content: "⚡ "; }
+    #hud-center { text-align: center; }
+    #hud-score {
+      display: block;
+      font-size: clamp(30px, 7vmin, 56px);
+      font-weight: 900;
+      font-style: italic;
+      line-height: 1;
+      letter-spacing: 0.02em;
+    }
+    #hud-mult {
+      display: inline-block;
+      margin-top: 4px;
+      font-weight: 900;
+      font-style: italic;
+      font-size: clamp(16px, 3vmin, 26px);
+      color: var(--neon-yellow);
+      text-shadow: 0 0 12px rgba(249, 200, 14, 0.8), 0 2px 0 #000;
+      transform: scale(0);
+      transition: transform 0.18s cubic-bezier(.3, 1.8, .5, 1);
+    }
+    #hud-mult.active { transform: scale(1); }
+
+    #controls-hint {
+      position: fixed;
+      left: 50%;
+      bottom: max(28px, 6vh, calc(env(safe-area-inset-bottom, 0px) + 16px));
+      transform: translate(-50%, 20px);
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: rgba(7, 1, 26, 0.65);
+      border: 1px solid rgba(5, 217, 232, 0.5);
+      font-size: clamp(13px, 2.2vmin, 18px);
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.4s, transform 0.4s;
+      pointer-events: none;
+      z-index: 10;
+    }
+    #controls-hint.visible { opacity: 1; transform: translate(-50%, 0); }
+
+    /* Touch indicators — faint lane arrows (touch devices only) */
+    .touch-arrow {
+      position: fixed;
+      bottom: max(24px, 4vh, calc(env(safe-area-inset-bottom, 0px) + 12px));
+      width: clamp(44px, 11vmin, 64px);
+      height: clamp(44px, 11vmin, 64px);
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.28);
+      background: rgba(255, 255, 255, 0.08);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(20px, 5vmin, 30px);
+      color: rgba(255, 255, 255, 0.55);
+      pointer-events: none;
+      z-index: 9;
+    }
+    #touch-left { left: max(16px, 4vw); }
+    #touch-right { right: max(16px, 4vw); }
+    body.touch .touch-arrow { display: flex; }
+
+    /* ---------- Game over ---------- */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(ellipse at center, rgba(42, 11, 74, 0.82) 0%, rgba(7, 1, 26, 0.92) 70%);
+      z-index: 20;
+      padding: 20px;
+      padding-top: max(20px, 8vh, env(safe-area-inset-top, 0px));
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      animation: overlay-in 0.35s ease-out;
+    }
+    @keyframes overlay-in { from { opacity: 0; } to { opacity: 1; } }
+    .overlay h1 {
+      font-size: clamp(30px, 8vmin, 64px);
+      font-weight: 900;
+      font-style: italic;
+      letter-spacing: 0.04em;
+      color: var(--neon-pink);
+      text-shadow: 0 0 18px rgba(255, 42, 109, 0.85), 0 3px 0 #000;
+      margin-bottom: clamp(4px, 1vmin, 10px);
+      text-align: center;
+    }
+    #death-cause { font-size: clamp(13px, 2.2vmin, 18px); color: #cbb8ff; margin-bottom: clamp(12px, 3vmin, 26px); text-align: center; }
+    .score-label { font-size: clamp(12px, 1.8vmin, 15px); letter-spacing: 0.3em; opacity: 0.7; }
+    #final-score {
+      font-size: clamp(52px, 14vmin, 120px);
+      font-weight: 900;
+      font-style: italic;
+      line-height: 1;
+      text-shadow: 0 0 22px rgba(5, 217, 232, 0.8), 0 4px 0 #000;
+      animation: score-pop 0.6s cubic-bezier(.3, 1.8, .5, 1);
+    }
+    @keyframes score-pop { from { transform: scale(0.2); } to { transform: scale(1); } }
+    #final-stats { font-size: clamp(14px, 2.4vmin, 20px); margin-top: 8px; color: #e0d4ff; }
+    #best-score { font-size: clamp(13px, 2.2vmin, 18px); color: var(--neon-yellow); margin-top: 6px; letter-spacing: 0.08em; }
+    #new-best {
+      margin-top: 10px;
+      padding: 4px 14px;
+      border-radius: 999px;
+      background: var(--neon-yellow);
+      color: var(--ink);
+      font-weight: 900;
+      font-style: italic;
+      letter-spacing: 0.1em;
+      animation: pulse 0.8s ease-in-out infinite alternate;
+    }
+    @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
+    .overlay button {
+      margin-top: clamp(20px, 4vmin, 36px);
+      padding: clamp(12px, 2.2vmin, 18px) clamp(34px, 7vmin, 56px);
+      font-size: clamp(17px, 2.8vmin, 24px);
+      font-family: inherit;
+      font-weight: 900;
+      font-style: italic;
+      letter-spacing: 0.1em;
+      color: var(--ink);
+      background: linear-gradient(180deg, #7ef9ff, var(--neon-cyan));
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      min-height: 48px;
+      min-width: 160px;
+      box-shadow: 0 0 24px rgba(5, 217, 232, 0.6), 0 4px 0 #036c74;
+      transition: transform 0.1s, box-shadow 0.2s;
+    }
+    .overlay button:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 0 34px rgba(5, 217, 232, 0.9), 0 6px 0 #036c74; }
+    .overlay button:active { transform: translateY(2px) scale(0.97); box-shadow: 0 0 18px rgba(5, 217, 232, 0.6), 0 1px 0 #036c74; }
+    .restart-hint { margin-top: 12px; font-size: clamp(12px, 1.8vmin, 15px); opacity: 0.6; }
+    body.touch .restart-hint .desktop-only { display: none; }
+
+    /* ---------- Mute button (Step 3 audio) ---------- */
+    #mute-btn {
+      position: fixed;
+      top: calc(max(14px, env(safe-area-inset-top, 0px)) + clamp(52px, 9vmin, 64px));
+      right: max(14px, 3vw);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(5, 217, 232, 0.55);
+      background: rgba(7, 1, 26, 0.55);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 25;
+      transition: transform 0.1s, background 0.2s;
+    }
+    #mute-btn:hover { background: rgba(5, 217, 232, 0.25); transform: scale(1.06); }
+    #mute-btn:active { transform: scale(0.94); }
+    #mute-btn svg { width: 24px; height: 24px; }
+    #mute-btn.muted { border-color: rgba(255, 68, 102, 0.6); }
+
+    /* ---------- FX layer (Step 2 polish) ---------- */
+    #fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 12; overflow: hidden; }
+    #fx-flash { position: fixed; inset: 0; opacity: 0; pointer-events: none; z-index: 11; mix-blend-mode: screen; }
+    .fx-slam {
+      position: absolute;
+      left: 50%;
+      top: 34%;
+      transform: translate(-50%, -50%);
+      font-weight: 900;
+      font-style: italic;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      -webkit-text-stroke: 2px rgba(7, 1, 26, 0.9);
+      animation: slam 1.1s cubic-bezier(.2, 1.4, .4, 1) forwards;
+    }
+    .fx-go { font-size: clamp(64px, 18vmin, 160px); color: #fff; text-shadow: 0 0 30px var(--neon-cyan), 0 0 60px var(--neon-pink), 0 6px 0 #000; animation-duration: 0.9s; }
+    .fx-streak { font-size: clamp(40px, 10vmin, 96px); color: var(--neon-yellow); text-shadow: 0 0 26px rgba(249, 200, 14, 0.9), 0 5px 0 #000; }
+    .fx-tier { font-size: clamp(30px, 7vmin, 64px); color: var(--neon-cyan); text-shadow: 0 0 24px rgba(5, 217, 232, 0.9), 0 4px 0 #000; top: 26%; }
+    .fx-near { font-size: clamp(28px, 6.5vmin, 58px); color: #fff; text-shadow: 0 0 20px var(--neon-cyan), 0 4px 0 #000; top: 44%; animation-duration: 0.8s; }
+    @keyframes slam {
+      0%   { transform: translate(-50%, -50%) scale(3) rotate(-6deg); opacity: 0; }
+      18%  { transform: translate(-50%, -50%) scale(0.92) rotate(-3deg); opacity: 1; }
+      28%  { transform: translate(-50%, -50%) scale(1.06) rotate(-3deg); }
+      70%  { transform: translate(-50%, -50%) scale(1) rotate(-3deg); opacity: 1; }
+      100% { transform: translate(-50%, -70%) scale(1.1) rotate(-3deg); opacity: 0; }
+    }
+    .fx-pop {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      font-weight: 900;
+      font-style: italic;
+      font-size: clamp(28px, 5vmin, 44px);
+      white-space: nowrap;
+      -webkit-text-stroke: 1.5px rgba(7, 1, 26, 0.9);
+      animation: pop 0.75s cubic-bezier(.2, 1.6, .4, 1) forwards;
+    }
+    .fx-pop-cell { color: var(--neon-green); text-shadow: 0 0 14px rgba(57, 255, 136, 0.9); }
+    .fx-pop-mult { color: var(--neon-yellow); text-shadow: 0 0 16px rgba(249, 200, 14, 0.9); font-size: clamp(32px, 6vmin, 52px); }
+    .fx-pop-near { color: #fff; text-shadow: 0 0 16px var(--neon-cyan); }
+    .fx-pop-clear { color: #ffb36b; text-shadow: 0 0 12px rgba(255, 108, 17, 0.9); font-size: clamp(22px, 4vmin, 34px); }
+    @keyframes pop {
+      0%   { transform: translate(-50%, -50%) scale(1.8); opacity: 0; }
+      20%  { transform: translate(-50%, -60%) scale(1); opacity: 1; }
+      100% { transform: translate(-50%, -180%) scale(0.9); opacity: 0; }
+    }
+    #fx-combo {
+      position: fixed;
+      left: 50%;
+      top: calc(max(14px, env(safe-area-inset-top, 0px)) + clamp(70px, 13vmin, 110px));
+      transform: translateX(-50%);
+      font-weight: 900;
+      font-style: italic;
+      color: var(--neon-yellow);
+      white-space: nowrap;
+      text-shadow: 0 0 18px rgba(249, 200, 14, 0.85), 0 3px 0 #000;
+      -webkit-text-stroke: 1.5px rgba(7, 1, 26, 0.9);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 12;
+    }
+    #fx-combo.visible { opacity: 1; }
+    #fx-combo.bump { animation: bump 0.35s cubic-bezier(.2, 1.8, .4, 1); }
+    @keyframes bump { from { transform: translateX(-50%) scale(1.8); } to { transform: translateX(-50%) scale(1); } }
+  </style>
+</head>
+<body>
+  <div id="hud" class="hidden">
+    <div class="hud-side"><span class="hud-label">DISTANCE</span><span id="hud-distance">0 m</span></div>
+    <div id="hud-center"><span id="hud-score">0</span><span id="hud-mult"></span></div>
+    <div class="hud-side right"><span class="hud-label">CELLS</span><span id="hud-cells">0</span></div>
+  </div>
+  <div id="controls-hint"></div>
+  <button id="mute-btn" class="ui-interactive" aria-label="Mute (M)"></button>
+  <div id="fx-flash"></div>
+  <div id="fx-layer"></div>
+  <div id="fx-combo"></div>
+  <div id="touch-left" class="touch-arrow">‹</div>
+  <div id="touch-right" class="touch-arrow">›</div>
+
+  <div id="gameover-overlay" class="overlay hidden">
+    <h1>SYSTEM CRASH</h1>
+    <div id="death-cause"></div>
+    <div class="score-label">SCORE</div>
+    <div id="final-score">0</div>
+    <div id="final-stats"></div>
+    <div id="best-score">Best 0</div>
+    <div id="new-best" class="hidden">NEW BEST!</div>
+    <button id="restart-btn">RUN AGAIN</button>
+    <div class="restart-hint"><span class="desktop-only">Press Space or </span>tap to retry</div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

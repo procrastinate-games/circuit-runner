@@ -1,0 +1,23 @@
+{
+  "name": "circuit-runner",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "verify": "node scripts/verify-runtime.mjs",
+    "iterate": "node scripts/iterate-client.js --url http://localhost:3000 --actions-file scripts/example-actions.json --iterations 3",
+    "validate": "node scripts/validate-architecture-threejs.mjs",
+    "test": "node --test --test-concurrency=1 \"tests/**/*.spec.js\"",
+    "test:headed": "BROWSER_TEST_HEADED=1 node --test --test-concurrency=1 \"tests/**/*.spec.js\"",
+    "test:update-snapshots": "BROWSER_TEST_UPDATE_SNAPSHOTS=1 node --test --test-concurrency=1 \"tests/**/*.spec.js\""
+  },
+  "dependencies": {
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "vite": "^7.3.1"
+  },
+  "description": "Neon 3D endless runner — dodge hurdles, laser gates and data crates as a little robot."
+}
