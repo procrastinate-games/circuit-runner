@@ -11,13 +11,19 @@
     "validate": "node scripts/validate-architecture-threejs.mjs",
     "test": "node --test --test-concurrency=1 \"tests/**/*.spec.js\"",
     "test:headed": "BROWSER_TEST_HEADED=1 node --test --test-concurrency=1 \"tests/**/*.spec.js\"",
-    "test:update-snapshots": "BROWSER_TEST_UPDATE_SNAPSHOTS=1 node --test --test-concurrency=1 \"tests/**/*.spec.js\""
+    "test:update-snapshots": "BROWSER_TEST_UPDATE_SNAPSHOTS=1 node --test --test-concurrency=1 \"tests/**/*.spec.js\"",
+    "deploy": "vite build && wrangler deploy",
+    "cf:preview": "vite build && wrangler dev"
   },
   "dependencies": {
     "three": "^0.180.0"
   },
   "devDependencies": {
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "wrangler": "^4.159.0"
   },
-  "description": "Neon 3D endless runner — dodge hurdles, laser gates and data crates as a little robot."
+  "description": "Neon 3D endless runner — dodge hurdles, laser gates and data crates as a little robot.",
+  "engines": {
+    "node": ">=20.19"
+  }
 }

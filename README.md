@@ -35,6 +35,16 @@ Scoring: 1 point per metre + 10 × multiplier per cell + 5 for clearing an obsta
 | `npm run iterate` | Scripted play-through with screenshots in `output/iterate/` |
 | `npm run validate` | Architecture checks from the game-creator skill |
 
+## Deploy (Cloudflare Workers)
+
+The game is a static site served by a Cloudflare Worker with static assets (`wrangler.jsonc` → `dist/`).
+
+- **Automatic:** the repo is connected to Cloudflare **Workers Builds** — every push to `main` runs `npm run build` and `npx wrangler deploy`.
+- **Manual:** `npx wrangler login` once, then `npm run deploy`.
+- **Local check in the Workers runtime:** `npm run cf:preview` (http://localhost:8787).
+
+Node 22 is pinned in `.node-version` for the build.
+
 ## How it's built
 
 ```
@@ -58,6 +68,5 @@ See `progress.md` for a step-by-step log and `design-brief.md` for the design.
 
 ## Not done (optional skill steps)
 
-- **Deploy** to the web — skipped (local-only build).
 - **Promo video** capture — skipped.
 - **Meshy AI / World Labs** generated models and environments — need API keys; the library robot + procedural city were used instead.
