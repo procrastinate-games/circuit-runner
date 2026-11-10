@@ -1,3 +1,5 @@
+> Publishing now uses [the organization GitHub Actions pipeline](docs/platform-publishing.md). This supersedes older deployment notes below.
+
 # Circuit Runner
 
 A neon 3D endless runner built with Three.js, following the [game-creator](https://github.com/PlayableIntelligence/game-creator) skill pipeline (scaffold → 3D assets → visual polish → audio → QA tests → review).

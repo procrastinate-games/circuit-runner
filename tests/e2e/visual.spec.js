@@ -20,6 +20,7 @@ test.describe('Circuit Runner — visual regression', () => {
 
   test('portrait phone layout fits all three lanes', async ({ manualPage }) => {
     await manualPage.setViewportSize({ width: 390, height: 844 });
+    await manualPage.waitForFunction(() => Math.abs(window.__GAME__.camera.aspect - 390 / 844) < 0.001);
     await freezeHtmlEffects(manualPage);
     await manualPage.evaluate(() => window.__EVENT_BUS__.emit(window.__EVENTS__.GAME_RESTART));
     await step(manualPage, 120);

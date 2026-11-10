@@ -1,0 +1,26 @@
+{
+  "slug": "circuit-runner",
+  "title": "Circuit Runner",
+  "shortDescription": "Jump the hurdles. Slide the lasers. Outrun your to-do list.",
+  "description": "Sprint a little robot down a three-lane neon highway at dusk. Jump striped hurdles, slide under laser gates, and switch lanes around data crates. Grab energy cells in quick succession to build up to a ×5 multiplier. The city keeps speeding up until something breaks.",
+  "coverAlt": "Circuit Runner gameplay with a robot on a neon three-lane highway toward a synthwave sunset and glowing city towers",
+  "primaryCategory": "Arcade",
+  "categories": [
+    "Arcade",
+    "Casual"
+  ],
+  "dimension": "3D",
+  "controls": [
+    "Use the left and right arrow keys or A and D to switch lanes. Up, W or Space jumps; Down or S slides, and slams you down mid-air.",
+    "On a touchscreen, swipe left, right, up or down, or tap the left or right half of the screen to switch lanes.",
+    "Jump hurdles, slide under laser gates, and steer around crates. M toggles audio. After a crash, press Space or Enter, tap, or use Run again."
+  ],
+  "languages": "English",
+  "saveNote": "Your best score and mute preference are stored locally on the game's Cloudflare origin. Runs are not saved, and there is no pause key; switching tabs freezes the run. Browsers may block or partition embedded storage, so your best may differ from the original game. Blocked storage does not prevent playing; open the original for its own saved records.",
+  "accent": "purple",
+  "schemaVersion": 1,
+  "status": "published",
+  "featured": false,
+  "showSource": false,
+  "startQuery": ""
+}
