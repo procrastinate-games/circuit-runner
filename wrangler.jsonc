@@ -3,7 +3,7 @@
 // `npm run build` then `npx wrangler deploy` on every push to main.
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "circuit-runner",
+  "name": "pg-circuit-runner",
   "compatibility_date": "2026-11-01",
   "assets": {
     "directory": "./dist",
