@@ -1,0 +1,22 @@
+{
+  "schema": "game-ai-usage/report@2",
+  "report_id": "e5cbf61e-6760-46d8-9973-02acf9ac4a9a",
+  "repo": "procrastinate-games/circuit-runner",
+  "date": "2026-11-09",
+  "accuracy": "exact",
+  "models": [
+    {
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "price_tier": null,
+      "calls": 187,
+      "input_tokens": 422,
+      "output_tokens": 210947,
+      "reasoning_tokens": null,
+      "cache_read_tokens": 62499804,
+      "cache_write_tokens": 438809,
+      "cache_write_5m_tokens": 0,
+      "cache_write_1h_tokens": 438809
+    }
+  ]
+}
