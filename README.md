@@ -72,3 +72,7 @@ See `progress.md` for a step-by-step log and `design-brief.md` for the design.
 
 - **Promo video** capture — skipped.
 - **Meshy AI / World Labs** generated models and environments — need API keys; the library robot + procedural city were used instead.
+
+## Play more browser games
+
+Find this game and the rest of the collection at [Games to Procrastinate To](https://procrastinate.games/).
